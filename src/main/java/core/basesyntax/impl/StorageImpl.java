@@ -7,6 +7,7 @@ public class StorageImpl<K, V> implements Storage<K, V> {
     private final K[] keys;
     private final V[] values;
     private int size = 0;
+    private final boolean[] occupied = new boolean[MAX_SIZE];
 
     public StorageImpl() {
         this.keys = (K[]) new Object[MAX_SIZE];
@@ -14,8 +15,8 @@ public class StorageImpl<K, V> implements Storage<K, V> {
     }
 
     private int indexOf(K key) {
-        for (int i = 0; i < MAX_SIZE; i++) {
-            if (keys[i] == null && key == null) {
+        for (int i = 0; i < keys.length; i++) {
+            if (keys[i] == null && key == null && occupied[i]) {
                 return i;
             } else if (keys[i] != null && keys[i].equals(key)) {
                 return i;
@@ -33,11 +34,12 @@ public class StorageImpl<K, V> implements Storage<K, V> {
             return;
         }
 
-        if (index == -1 && size < MAX_SIZE) {
+        if (size < MAX_SIZE) {
             for (int i = 0; i < MAX_SIZE; i++) {
-                if (keys[i] == null) {
+                if (keys[i] == null && !occupied[i]) {
                     keys[i] = key;
                     values[i] = value;
+                    occupied[i] = true;
                     size++;
                     break;
                 }
@@ -48,14 +50,10 @@ public class StorageImpl<K, V> implements Storage<K, V> {
     @Override
     public V get(K key) {
         int index = indexOf(key);
-        for (int i = 0; i < MAX_SIZE; i++) {
-            if (keys[i] == null && index != -1) {
-                return null;
-            } else if (index != -1) {
-                return values[index];
-            }
+        if (index == -1) {
+            return null;
         }
-        return null;
+        return values[index];
     }
 
     @Override
